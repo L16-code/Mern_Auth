@@ -50,12 +50,18 @@ class UserService{
                     const env = EnvConfig();
                     const SecretKey = env.secretKey;
                     // generate the jwt token
-                    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || SecretKey, {
+                    const token = jwt.sign({ userId: user.email }, process.env.JWT_SECRET || SecretKey, {
                         expiresIn: '1h',
                     });
                     response.success = true;
                     response.message = "User logged in successfully";
-                    response.data = token;
+                    response.data = {
+                        token,
+                        user: {
+                            username: user.username,
+                            email: user.email,
+                        },
+                    };
                     return response;
                 } else {
                     response.success = false;
@@ -70,6 +76,25 @@ class UserService{
         } catch (error) {
             
         }
+    }
+    async Profile(email:string){
+        try {
+            const user = await UserModel.findOne({email});
+            if (user) {
+                response.success = true;
+                response.message = "User found";
+                response.data = user;
+                return response;
+            } else {
+                response.success = false;
+                response.message = "User not found";
+                return response;
+            }
+        } catch (error) {
+            response.success = false;
+            response.message = "An error occurred while finding the user";
+        }
+        return response;
     }
 }
 export default new UserService

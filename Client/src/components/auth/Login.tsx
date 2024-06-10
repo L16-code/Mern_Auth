@@ -5,6 +5,8 @@ import * as yup from 'yup';
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Bounce, toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { login, token } from "../../state_Management/actions/rootReducer";
 const schema = yup.object().shape({
     email: yup.string().email().required(),
     password: yup.string().required().matches(
@@ -17,10 +19,11 @@ const Login = () => {
         resolver: yupResolver(schema)
     })
     const navigate=useNavigate();
+    const dispatch=useDispatch();
     const onSubmit = (data: UserLogin) => {
         axios.post('http://localhost:5000/login',data).then(res=>{
-            const token=res.data.data;
-            console.log(token)
+            const token_data=res.data.data;
+            console.log(token_data)
             console.log(res.data)
             if (res.data.success === true) {
                 toast.success('LoggIn Successfull'), {
@@ -34,6 +37,8 @@ const Login = () => {
                     theme: "light",
                     transition: Bounce,
                 }
+                dispatch(token(res.data.data.token))
+                dispatch(login(res.data.data.user))
                 navigate('/')
             }else{
                 toast.error(res.data.message), {

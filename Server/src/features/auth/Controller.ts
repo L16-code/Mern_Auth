@@ -20,3 +20,12 @@ export const userLogin = async (request: express.Request, response: express.Resp
         response.status(400).json(error)
     }
 } 
+export const Profile=async (request: express.Request, response: express.Response) =>{
+    try {
+        const {email}=request.params
+        const result=await UserService.Profile(email)
+        response.status(200).json(result)
+    } catch (error) {
+        response.status(400).json(error)
+    }
+}

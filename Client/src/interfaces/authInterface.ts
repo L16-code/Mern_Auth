@@ -16,3 +16,12 @@ export interface UserLogin{
     email:string;
     password:string;
 }
+export interface FirstState{
+    isAuthenticated: boolean;
+    user:userData|null;
+    token:string|null;
+}
+export interface userData{
+    username:string;
+    email:string;
+}
