@@ -27,31 +27,40 @@ const Profile = () => {
     }
   });
 
-  const onSubmit = async(data: ProfileData) => {
-    // console.log(data)
-    const AuthStr = 'Bearer '.concat(TOKEN);
-    axios.put("http://localhost:5000/profile", data, { headers: { Authorization: AuthStr } })
-      .then(res => {
-        // console.log(res.data);
-        if(res.data.success === true) {
-          toast.success('Profile Updated Successfully'), {
-            position: "top-center",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          }
-          reset();
-          closeModal();
-          window.location.reload();
-        }
-      })
-      .catch(err => {
-        console.log(err);
+  const onSubmit = async (data: ProfileData) => {
+    try {
+      console.log(data);
+      const AuthStr = 'Bearer '.concat(TOKEN);
+      const res = await axios.put("http://localhost:5000/profile", data, { headers: { Authorization: AuthStr } });
+      
+      if (res.data.success===true) {
+        toast.success('Profile Updated Successfully', {
+          position: "top-center",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        reset();
+        closeModal();
+        fetchProfileData()
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error('Profile Update Failed', {
+        position: "top-center",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
       });
+    }
   }
 
   const [showModal, setShowModal] = useState(false);
@@ -65,20 +74,20 @@ const Profile = () => {
     dob: "",
     gender: "",
   });
-
+  const fetchProfileData = async () => {
+    try {
+      const AuthStr = 'Bearer '.concat(TOKEN);
+      const res = await axios.get("http://localhost:5000/profile", { headers: { Authorization: AuthStr } });
+      const data = res.data.data;
+      setProfileData(data);
+      reset(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   useEffect(() => {
-    const AuthStr = 'Bearer '.concat(TOKEN);
-    axios.get("http://localhost:5000/profile", { headers: { Authorization: AuthStr } })
-      .then(res => {
-        const data = res.data.data;
-        setProfileData(data);
-        reset(data);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }, [TOKEN, reset]);
-
+    fetchProfileData();
+  }, [TOKEN]);
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <div style={{ width: '500px', padding: '20px', border: '1px solid #ccc', borderRadius: '5px', backgroundColor: "aliceblue" }}>

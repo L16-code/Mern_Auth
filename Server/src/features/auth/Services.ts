@@ -50,7 +50,7 @@ class UserService{
                     const env = EnvConfig();
                     const SecretKey = env.secretKey;
                     // generate the jwt token
-                    const token = jwt.sign({ userId: user.email }, process.env.JWT_SECRET || SecretKey, {
+                    const token = jwt.sign({ userEmail: user.email }, process.env.JWT_SECRET || SecretKey, {
                         expiresIn: '1h',
                     });
                     response.success = true;
@@ -102,7 +102,7 @@ class UserService{
     }
     async ProfileUpdate(ProfileData:IProfileData, email:string){
         try {
-            const user = await UserModel.findOneAndUpdate({email},ProfileData,{new:true});
+            const user = await UserModel.findOneAndUpdate({email},ProfileData);
             if (user) {
                 response.success = true;
                 response.message = "User found";
