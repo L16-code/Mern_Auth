@@ -2,7 +2,7 @@ import { UserModel } from "./Model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import EnvConfig from "../../config/EnvConfig";
-import { IProfileData, IUserLogin, IUserRegister } from "./interface";
+import { IProfileData, IUserLogin, IUserRegister, QueryParams } from "./interface";
 const response: {
     message: string;
     data?: any;
@@ -116,6 +116,27 @@ class UserService{
         } catch (error) {
             response.success = false;
             response.message = "An error occurred while finding the user";
+        }
+        return response;
+    }
+    async ShowAllUsers({ page, limit, sortBy, order, filter }: QueryParams){
+        try {
+            const offset = (page - 1) * limit;
+        const users = await UserModel.find({ username: new RegExp(filter, 'i') })
+            .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
+            .skip(offset)
+            .limit(limit);
+        const totalUsers = await UserModel.countDocuments({ username: new RegExp(filter, 'i') });
+        return {
+            success: true,
+            message: "Users found",
+            data: users,
+            totalPages: Math.ceil(totalUsers / limit),
+            currentPage: page,
+        }
+        } catch (error) {
+            response.success = false;
+            response.message = "An error occurred while finding the users";
         }
         return response;
     }

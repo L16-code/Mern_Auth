@@ -17,3 +17,10 @@ export interface IProfileData{
     dob:string;
     gender:string;
 }
+export interface QueryParams {
+    page: number;
+    limit: number;
+    sortBy: string;
+    order: string;
+    filter: string;
+}
