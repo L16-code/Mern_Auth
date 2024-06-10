@@ -2,7 +2,7 @@ import { UserModel } from "./Model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import EnvConfig from "../../config/EnvConfig";
-import { IUserLogin, IUserRegister } from "./interface";
+import { IProfileData, IUserLogin, IUserRegister } from "./interface";
 const response: {
     message: string;
     data?: any;
@@ -58,6 +58,7 @@ class UserService{
                     response.data = {
                         token,
                         user: {
+                            id:user._id,
                             username: user.username,
                             email: user.email,
                         },
@@ -79,7 +80,29 @@ class UserService{
     }
     async Profile(email:string){
         try {
-            const user = await UserModel.findOne({email});
+            const user = await UserModel.findOne({email},{username:1,email:1,_id:0,
+                dob:1,
+                gender:1
+            });
+            if (user) {
+                response.success = true;
+                response.message = "User found";
+                response.data = user;
+                return response;
+            } else {
+                response.success = false;
+                response.message = "User not found";
+                return response;
+            }
+        } catch (error) {
+            response.success = false;
+            response.message = "An error occurred while finding the user";
+        }
+        return response;
+    }
+    async ProfileUpdate(ProfileData:IProfileData, email:string){
+        try {
+            const user = await UserModel.findOneAndUpdate({email},ProfileData,{new:true});
             if (user) {
                 response.success = true;
                 response.message = "User found";

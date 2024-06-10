@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import envConfig from '../config/EnvConfig';
 
 interface CustomRequest extends Request {
-    userId?: string | JwtPayload;
+    userEmail?: string | JwtPayload;
 }
 
 const env = envConfig();
@@ -21,7 +21,7 @@ const verifyToken = (req: CustomRequest, res: Response, next: NextFunction): voi
         console.log(newToken);
         const decoded = jwt.verify(newToken, SecretKey);
         console.log(decoded);
-        req.userId = (decoded as JwtPayload).userId;
+        req.userEmail = (decoded as JwtPayload).userEmail;
         next();
     } catch (error) {
         res.status(401).json({ error: 'Invalid token' });

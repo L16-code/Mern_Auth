@@ -14,3 +14,13 @@ export const registerSchema = Joi.object({
     gender: Joi.string().required()
 })
 
+export const profileSchema= Joi.object({
+
+});
+
+export const updateProfileSchema= Joi.object({
+    username: Joi.string().required(),
+    email: Joi.string().email().required(),
+    dob: Joi.string().required(),
+    gender: Joi.string().required()
+})

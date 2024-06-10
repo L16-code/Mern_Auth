@@ -13,15 +13,17 @@ export interface UserRegister{
     gender:string;
 }
 export interface UserLogin{
+    // id: string;
     email:string;
     password:string;
 }
 export interface FirstState{
     isAuthenticated: boolean;
     user:userData|null;
-    token:string|null;
+    token:string;
 }
 export interface userData{
+    id:string
     username:string;
     email:string;
 }
