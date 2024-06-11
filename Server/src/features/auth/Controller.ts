@@ -1,7 +1,5 @@
 import express from "express";
 import UserService from "./Services"
-// import { JsonWebTokenError as jwt} from "jsonwebtoken";
-// import jwt from 'jsonwebtoken';
 import EnvConfig from "../../config/EnvConfig";
 import { CustomRequest } from "../../middleware/authMiddleware";
 const env = EnvConfig();

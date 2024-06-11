@@ -11,6 +11,6 @@ AuthRouter.post('/register',validateRequest(registerSchema),HandleErrors(UserReg
 AuthRouter.post('/login',validateRequest(loginSchema),HandleErrors(userLogin));
 AuthRouter.get('/profile',verifyToken,HandleErrors(Profile));
 AuthRouter.put('/profile',verifyToken,validateRequest(updateProfileSchema),HandleErrors(UpdateProfile));
-AuthRouter.get('/users',verifyToken,HandleErrors(ShowAllUsers));
+AuthRouter.get('/users',verifyToken('admin'),HandleErrors(ShowAllUsers));
 
 export default AuthRouter;

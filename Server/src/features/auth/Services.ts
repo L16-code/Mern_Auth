@@ -50,7 +50,7 @@ class UserService{
                     const env = EnvConfig();
                     const SecretKey = env.secretKey;
                     // generate the jwt token
-                    const token = jwt.sign({ userEmail: user.email }, process.env.JWT_SECRET || SecretKey, {
+                    const token = jwt.sign({ userEmail: user.email,role:user.role }, process.env.JWT_SECRET || SecretKey, {
                         expiresIn: '1h',
                     });
                     response.success = true;
@@ -119,10 +119,10 @@ class UserService{
         }
         return response;
     }
-    async ShowAllUsers({ page, limit, sortBy, order, filter }: QueryParams){
+    async  ShowAllUsers({ page, limit, sortBy, order, filter }: QueryParams){
         try {
             const offset = (page - 1) * limit;
-        const users = await UserModel.find({ username: new RegExp(filter, 'i') })
+        const users = await UserModel.find({  username: new RegExp(filter, 'i'), role: 'user' })
             .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
             .skip(offset)
             .limit(limit);
