@@ -8,10 +8,10 @@ const response: {
     data?: any;
     success: boolean;
 } = { message: "", success: false };
-class UserService{
-    async userRegister(userdata:IUserRegister) {
+class UserService {
+    async userRegister(userdata: IUserRegister) {
         try {
-            const {username, password, email,dob,gender} =userdata;
+            const { username, password, email, dob, gender } = userdata;
             const existingUser = await UserModel.findOne({ $or: [{ username }, { email }] }); // checks if user already exists or not by email or username beacause both are unique
             if (existingUser) {
                 response.success = false;
@@ -30,19 +30,25 @@ class UserService{
             if (res) {
                 response.success = true;
                 response.message = "User registered successfully";
+                response.data = '';
+
             } else {
                 response.success = false;
                 response.message = "User not registered";
+                response.data = '';
+
             }
         } catch (error) {
             response.success = false;
             response.message = "An error occurred while registering the user";
+            response.data = '';
+
         }
         return response;
     }
-    async userLogin(LoginData:IUserLogin) {
+    async userLogin(LoginData: IUserLogin) {
         try {
-            const{email, password} =LoginData;
+            const { email, password } = LoginData;
             const user = await UserModel.findOne({ email });
             if (user) {
                 const validPassword = await bcrypt.compare(password, user.password);
@@ -50,7 +56,7 @@ class UserService{
                     const env = EnvConfig();
                     const SecretKey = env.secretKey;
                     // generate the jwt token
-                    const token = jwt.sign({ userEmail: user.email,role:user.role }, process.env.JWT_SECRET || SecretKey, {
+                    const token = jwt.sign({ userEmail: user.email, role: user.role }, process.env.JWT_SECRET || SecretKey, {
                         expiresIn: '1h',
                     });
                     response.success = true;
@@ -58,7 +64,7 @@ class UserService{
                     response.data = {
                         token,
                         user: {
-                            id:user._id,
+                            id: user._id,
                             username: user.username,
                             email: user.email,
                         },
@@ -67,22 +73,27 @@ class UserService{
                 } else {
                     response.success = false;
                     response.message = "Invalid password";
+                    response.data = '';
+
                     return response;
                 }
             } else {
                 response.success = false;
                 response.message = "User not found";
+                response.data = '';
+
                 return response;
             }
         } catch (error) {
-            
+
         }
     }
-    async Profile(email:string){
+    async Profile(email: string) {
         try {
-            const user = await UserModel.findOne({email},{username:1,email:1,_id:0,
-                dob:1,
-                gender:1
+            const user = await UserModel.findOne({ email }, {
+                username: 1, email: 1, _id: 0,
+                dob: 1,
+                gender: 1
             });
             if (user) {
                 response.success = true;
@@ -92,17 +103,20 @@ class UserService{
             } else {
                 response.success = false;
                 response.message = "User not found";
+                response.data = '';
                 return response;
             }
         } catch (error) {
             response.success = false;
             response.message = "An error occurred while finding the user";
+            response.data = '';
+
         }
         return response;
     }
-    async ProfileUpdate(ProfileData:IProfileData, email:string){
+    async ProfileUpdate(ProfileData: IProfileData, email: string) {
         try {
-            const user = await UserModel.findOneAndUpdate({email},ProfileData);
+            const user = await UserModel.findOneAndUpdate({ email }, ProfileData);
             if (user) {
                 response.success = true;
                 response.message = "User found";
@@ -111,6 +125,7 @@ class UserService{
             } else {
                 response.success = false;
                 response.message = "User not found";
+                response.data = '';
                 return response;
             }
         } catch (error) {
@@ -119,21 +134,21 @@ class UserService{
         }
         return response;
     }
-    async  ShowAllUsers({ page, limit, sortBy, order, filter }: QueryParams){
+    async ShowAllUsers({ page, limit, sortBy, order, filter }: QueryParams) {
         try {
             const offset = (page - 1) * limit;
-        const users = await UserModel.find({  username: new RegExp(filter, 'i'), role: 'user' })
-            .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
-            .skip(offset)
-            .limit(limit);
-        const totalUsers = await UserModel.countDocuments({ username: new RegExp(filter, 'i') });
-        return {
-            success: true,
-            message: "Users found",
-            data: users,
-            totalPages: Math.ceil(totalUsers / limit),
-            currentPage: page,
-        }
+            const users = await UserModel.find({ username: new RegExp(filter, 'i'), role: 'user' })
+                .sort({ [sortBy]: order === 'asc' ? 1 : -1 })
+                .skip(offset)
+                .limit(limit);
+            const totalUsers = await UserModel.countDocuments({ username: new RegExp(filter, 'i') });
+            return {
+                success: true,
+                message: "Users found",
+                data: users,
+                totalPages: Math.ceil(totalUsers / limit),
+                currentPage: page,
+            }
         } catch (error) {
             response.success = false;
             response.message = "An error occurred while finding the users";

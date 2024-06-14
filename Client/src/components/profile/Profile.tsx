@@ -81,6 +81,7 @@ const Profile = () => {
       const data = res.data.data;
       setProfileData(data);
       reset(data);
+      console.log(data);
     } catch (err) {
       console.log(err);
     }
