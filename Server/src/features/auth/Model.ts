@@ -1,3 +1,4 @@
+import { required } from 'joi';
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -8,7 +9,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        default:null
     },
     email: {
         type: String,
@@ -17,17 +18,19 @@ const userSchema = new mongoose.Schema({
     },
     dob:{
         type:String,
-        required:true
     },
     gender:{
         type:String,
-        required:true
     },
     role:{
         type:String,
         required:true,
         default:'user',
         enum:['user','admin']
+    },
+    google_Verified:{
+        type:Boolean,
+        default:false
     }
 });
 

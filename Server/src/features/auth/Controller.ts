@@ -6,9 +6,9 @@ const env = EnvConfig();
 
 export const UserRegister = async (request: express.Request, response: express.Response) => {
     try {
-        const { username, email, password, dob, gender } = request.body;
-        const registerData = { username, email, password, dob, gender };
-        const result = await UserService.userRegister(registerData)
+        // const { username, email, password, dob, gender } = request.body;
+        // const registerData = { username, email, password, dob, gender };
+        const result = await UserService.userRegister(request.body)
         response.status(201).json(result)
     } catch (error) {
         response.status(400).json(error)
@@ -16,9 +16,9 @@ export const UserRegister = async (request: express.Request, response: express.R
 };
 export const userLogin = async (request: express.Request, response: express.Response) => {
     try {
-        const { email, password } = request.body;
-        const LoginData = { email, password }
-        const result = await UserService.userLogin(LoginData)
+        // const { email, password } = request.body;
+        // const LoginData = { email, password }
+        const result = await UserService.userLogin(request.body)
         response.status(200).json(result)
     } catch (error) {
         response.status(400).json(error)

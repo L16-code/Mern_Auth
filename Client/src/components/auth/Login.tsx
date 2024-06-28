@@ -7,6 +7,9 @@ import axios from "axios";
 import { Bounce, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { login, token } from "../../state_Management/actions/rootReducer";
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import routes from "../../routes/routes";
+
 const schema = yup.object().shape({
     email: yup.string().email().required(),
     password: yup.string().required().matches(
@@ -15,11 +18,56 @@ const schema = yup.object().shape({
     )
 })
 const Login = () => {
+    const ClientId = "763033723945-4jf16tnnn3ta5p82k0auh75o1n5o09du.apps.googleusercontent.com";
     const { register, handleSubmit, formState: { errors } } = useForm<UserLogin>({
         resolver: yupResolver(schema)
     })
     const navigate=useNavigate();
     const dispatch=useDispatch();
+    const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
+        console.log('Google Signup Success:', credentialResponse);
+        try {
+            // console.log(credentialResponse.credential);
+            axios.post('http://localhost:5000/login', {token: credentialResponse.credential}).then(res => {
+                // console.log(res.data);
+                if (res.data.success === true) {
+                    toast.success('LoggIn Successfull'), {
+                        position: "top-center",
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                        transition: Bounce,
+                    }
+                    dispatch(token(res.data.data.Newtoken))
+                    dispatch(login(res.data.data.user))
+                    navigate(routes.HOME)
+                } else {
+                    toast.error(res.data.message), {
+                        position: "top-center",
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                        transition: Bounce,
+                    }
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+        } catch (error) {
+            console.error('Google Signup Failed', error);
+        }
+    };
+    const handleGoogleSignupError = () => {
+        console.error('Google Signup Failed');
+    };
     const onSubmit = (data: UserLogin) => {
         axios.post('http://localhost:5000/login',data).then(res=>{
             const token_data=res.data.data;
@@ -84,6 +132,15 @@ const Login = () => {
                 <div style={{ marginTop: '15px' }}>New User?
                     <Link to="/register" >Register</Link>
                 </div>
+                <GoogleOAuthProvider clientId={ClientId}>
+                    <div>
+                        <p></p>
+                        <GoogleLogin
+                            onSuccess={handleGoogleLoginSuccess}
+                            onError={handleGoogleSignupError}
+                        />
+                    </div>
+                </GoogleOAuthProvider>
             </form>
         </div>
     )

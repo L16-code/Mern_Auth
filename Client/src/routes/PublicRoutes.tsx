@@ -18,7 +18,6 @@ const PublicRoutes: React.FC = () => {
     // const disptach = useDispatch()
     // const LogoutHandler = () => {
     //   disptach(logOutAction())
-
     // }
     return (
         <div>

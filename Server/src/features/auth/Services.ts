@@ -2,15 +2,29 @@ import { UserModel } from "./Model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import EnvConfig from "../../config/EnvConfig";
-import { IProfileData, IUserLogin, IUserRegister, QueryParams } from "./interface";
+import { IGoogleCredential, IProfileData, IUserLogin, IUserRegister, QueryParams } from "./interface";
 const response: {
     message: string;
     data?: any;
     success: boolean;
 } = { message: "", success: false };
+function isISignUp(data: unknown): data is IUserRegister {
+    return (data as IUserRegister).username !== undefined &&
+        (data as IUserRegister).email !== undefined &&
+        (data as IUserRegister).password !== undefined &&
+        (data as IUserRegister).dob !== undefined &&
+        (data as IUserRegister).gender !== undefined;
+}
+function isIGoogleCredential(data: unknown): data is IGoogleCredential {
+    return (data as IGoogleCredential).token !== undefined;
+}
+function isILogIn(data: unknown): data is IUserLogin {
+    return (data as IUserLogin).email !== undefined &&
+        (data as IUserLogin).password !== undefined;
+}
 class UserService {
     async userRegister(userdata: IUserRegister) {
-        try {
+        if (isISignUp(userdata)) {
             const { username, password, email, dob, gender } = userdata;
             const existingUser = await UserModel.findOne({ $or: [{ username }, { email }] }); // checks if user already exists or not by email or username beacause both are unique
             if (existingUser) {
@@ -38,16 +52,51 @@ class UserService {
                 response.data = '';
 
             }
-        } catch (error) {
-            response.success = false;
-            response.message = "An error occurred while registering the user";
-            response.data = '';
-
+        } else if (isIGoogleCredential(userdata)) {
+            const env = EnvConfig();
+            const SecretKey = env.secretKey;
+            const { token } = userdata;
+            // console.log(jwt.decode(token))
+            if (token) {
+                const decodedData = jwt.decode(token) as { email: string; given_name: string };
+                const email = decodedData.email
+                const existingUser = await UserModel.findOne({ email }); // checks if user already exists or not by email
+                if (existingUser) {
+                    response.message = "User already exists";
+                    response.success = false;
+                    response.data = null;
+                    return response;
+                }
+                const username = decodedData.given_name
+                const newUser = new UserModel({
+                    username: username,
+                    email: email,
+                    password: null,
+                    dob: null,
+                    gender: null,
+                    google_Verified: true
+                });
+                const savedUser = await newUser.save();
+                const Newtoken = jwt.sign({ userEmail: savedUser.email, role: savedUser.role }, process.env.JWT_SECRET || SecretKey, {
+                    expiresIn: '1h',
+                });
+                response.success = true;
+                response.message = "User logged in successfully";
+                response.data = {
+                    Newtoken,
+                    user: {
+                        id: savedUser._id,
+                        username: savedUser.username,
+                        email: savedUser.email,
+                    },
+                };
+            }
         }
+
         return response;
     }
     async userLogin(LoginData: IUserLogin) {
-        try {
+        if (isILogIn(LoginData)) {
             const { email, password } = LoginData;
             const user = await UserModel.findOne({ email });
             if (user) {
@@ -69,24 +118,18 @@ class UserService {
                             email: user.email,
                         },
                     };
-                    return response;
                 } else {
                     response.success = false;
                     response.message = "Invalid password";
                     response.data = '';
-
-                    return response;
                 }
             } else {
                 response.success = false;
                 response.message = "User not found";
                 response.data = '';
-
-                return response;
             }
-        } catch (error) {
-
         }
+        return response;
     }
     async Profile(email: string) {
         try {

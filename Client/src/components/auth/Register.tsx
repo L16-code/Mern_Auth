@@ -5,6 +5,10 @@ import { UserRegister } from "../../interfaces/authInterface";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Bounce, toast } from "react-toastify";
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import routes from "../../routes/routes";
+import { useDispatch } from "react-redux";
+import { login, token } from "../../state_Management/actions/rootReducer";
 // import { useEffect } from "react";
 const schema = yup.object().shape({
     username: yup.string().required(),
@@ -17,13 +21,59 @@ const schema = yup.object().shape({
     gender: yup.string().required(),
 })
 const Register = () => {
+    const ClientId = "763033723945-4jf16tnnn3ta5p82k0auh75o1n5o09du.apps.googleusercontent.com";
+    const dispatch=useDispatch();
+    const handleGoogleSignupSuccess = async (credentialResponse: CredentialResponse) => {
+        console.log('Google Signup Success:', credentialResponse);
+        try {
+            // console.log(credentialResponse.credential);
+            axios.post('http://localhost:5000/register', {token: credentialResponse.credential}).then(res => {
+                console.log(res.data);
+                if (res.data.success === true) {
+                    toast.success('User Registered Successfully'), {
+                        position: "top-center",
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                        transition: Bounce,
+                    }
+                    dispatch(token(res.data.data.Newtoken))
+                    dispatch(login(res.data.data.user))
+                    navigate(routes.HOME)
+                } else {
+                    toast.error(res.data.message), {
+                        position: "top-center",
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: false,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "light",
+                        transition: Bounce,
+                    }
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+        } catch (error) {
+            console.error('Google Signup Failed', error);
+        }
+    };
+    const handleGoogleSignupError = () => {
+        console.error('Google Signup Failed');
+    };
     const { register, handleSubmit, formState: { errors } } = useForm<UserRegister>({
         resolver: yupResolver(schema),
     })
     const navigate = useNavigate();
     const onSubmit = (data: UserRegister) => {
         axios.post('http://localhost:5000/register', data).then(res => {
-            console.log(res.data);
+            // console.log(res.data);
             if (res.data.success === true) {
                 toast.success('User Registered Successfully'), {
                     position: "top-center",
@@ -37,7 +87,7 @@ const Register = () => {
                     transition: Bounce,
                 }
                 navigate('/login')
-            }else{
+            } else {
                 toast.error(res.data.message), {
                     position: "top-center",
                     autoClose: 2000,
@@ -114,6 +164,15 @@ const Register = () => {
                 <div style={{ marginTop: '15px' }}>Already a User?
                     <Link to="/login" >Login</Link>
                 </div>
+                <GoogleOAuthProvider clientId={ClientId}>
+                    <div>
+                        <p></p>
+                        <GoogleLogin
+                            onSuccess={handleGoogleSignupSuccess}
+                            onError={handleGoogleSignupError}
+                        />
+                    </div>
+                </GoogleOAuthProvider>
             </form>
         </div>
     )
