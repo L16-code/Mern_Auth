@@ -2,8 +2,9 @@ import Joi from "joi";
 import { PASSWORD_REGEX } from "../../utils/commonConstants";
 
 export const loginSchema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(5).max(36).required()
+    email: Joi.string().email(),
+    password: Joi.string().min(5).max(36),
+    token: Joi.string()
 })
 
 export const registerSchema = Joi.object({

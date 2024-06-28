@@ -42,7 +42,7 @@ const Login = () => {
                         theme: "light",
                         transition: Bounce,
                     }
-                    dispatch(token(res.data.data.Newtoken))
+                    dispatch(token(res.data.data.token))
                     dispatch(login(res.data.data.user))
                     navigate(routes.HOME)
                 } else {

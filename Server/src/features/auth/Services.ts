@@ -5,7 +5,7 @@ import EnvConfig from "../../config/EnvConfig";
 import { IGoogleCredential, IProfileData, IUserLogin, IUserRegister, QueryParams } from "./interface";
 const response: {
     message: string;
-    data?: any;
+    data?: unknown;
     success: boolean;
 } = { message: "", success: false };
 function isISignUp(data: unknown): data is IUserRegister {
@@ -128,6 +128,37 @@ class UserService {
                 response.message = "User not found";
                 response.data = '';
             }
+        }
+        else if(isIGoogleCredential(LoginData)){
+            const env = EnvConfig();
+            const SecretKey = env.secretKey;
+            const { token } = LoginData;
+            // console.log(jwt.decode(token))
+            if (token) {
+                const decodedData = jwt.decode(token) as { email: string; given_name: string };
+                const email = decodedData.email
+                const user = await UserModel.findOne({ email });
+                if (user) {
+                    const token = jwt.sign({ userEmail: user.email, role: user.role }, process.env.JWT_SECRET || SecretKey, {
+                        expiresIn: '1h',
+                    });
+                    response.success = true;
+                    response.message = "User logged in successfully";
+                    response.data = {
+                        token,
+                        user: {
+                            id: user._id,
+                            username: user.username,
+                            email: user.email,
+                        },
+                    };
+                } else {
+                    response.success = false;
+                    response.message = "User not found";
+                    response.data = '';
+                }
+            }
+
         }
         return response;
     }
