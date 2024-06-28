@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { login, token } from "../../state_Management/actions/rootReducer";
 import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import routes from "../../routes/routes";
-
+import FacebookLogin, { ReactFacebookLoginInfo } from 'react-facebook-login';
 const schema = yup.object().shape({
     email: yup.string().email().required(),
     password: yup.string().required().matches(
@@ -22,13 +22,13 @@ const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm<UserLogin>({
         resolver: yupResolver(schema)
     })
-    const navigate=useNavigate();
-    const dispatch=useDispatch();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
     const handleGoogleLoginSuccess = async (credentialResponse: CredentialResponse) => {
         console.log('Google Signup Success:', credentialResponse);
         try {
             // console.log(credentialResponse.credential);
-            axios.post('http://localhost:5000/login', {token: credentialResponse.credential}).then(res => {
+            axios.post('http://localhost:5000/login', { token: credentialResponse.credential }).then(res => {
                 // console.log(res.data);
                 if (res.data.success === true) {
                     toast.success('LoggIn Successfull'), {
@@ -65,12 +65,19 @@ const Login = () => {
             console.error('Google Signup Failed', error);
         }
     };
+    const handleFacebookSignup = async (response: ReactFacebookLoginInfo) => {
+        console.log('Facebook Signup Success:', response);
+        try {
+        } catch (error) {
+            console.error('Facebook Signup Failed', error);
+        }
+    };
     const handleGoogleSignupError = () => {
         console.error('Google Signup Failed');
     };
     const onSubmit = (data: UserLogin) => {
-        axios.post('http://localhost:5000/login',data).then(res=>{
-            const token_data=res.data.data;
+        axios.post('http://localhost:5000/login', data).then(res => {
+            const token_data = res.data.data;
             console.log(token_data)
             console.log(res.data)
             if (res.data.success === true) {
@@ -88,7 +95,7 @@ const Login = () => {
                 dispatch(token(res.data.data.token))
                 dispatch(login(res.data.data.user))
                 navigate('/')
-            }else{
+            } else {
                 toast.error(res.data.message), {
                     position: "top-center",
                     autoClose: 2000,
@@ -141,6 +148,22 @@ const Login = () => {
                         />
                     </div>
                 </GoogleOAuthProvider>
+                <div>
+                    <p></p>
+                    <p>or Sign Up with Facebook</p>
+                    <p></p>
+                    <button style={{ width: '100%', padding: '10px', backgroundColor: '#3b5998', color: '#fff', border: 'none', borderRadius: '5px' }}>
+                        <FacebookLogin
+                            appId="1704215630115943"
+                            autoLoad={false}
+                            fields="name,email,picture"
+                            callback={handleFacebookSignup}
+                            onFailure={() => console.log('Facebook Signup Failed')}
+                        />
+
+                    </button>
+
+                </div>
             </form>
         </div>
     )
